@@ -1,5 +1,6 @@
 import json
 from Task import Task
+import sqlite3
 
 class Taskmanager():
     def __init__(self):
@@ -16,90 +17,87 @@ class Taskmanager():
         print("8. Exit")
 
     def view_task(self):
-        for task in self.tasks:
-            print(task)
-            print("-" * 20)
+        db = sqlite3.connect('task_database.db')
+        cur = db.cursor()
+        sql="""SELECT * FROM task_tracker"""
+        cur.execute(sql)
+        result=cur.fetchall()
+        return result
+        db.close()
 
+    def database(self):
+        db=sqlite3.connect('task_database.db')
+        cur=db.cursor()
+        return db, cur
+    def create_Database(self):
+        db, cur = self.database()
+        sql = """CREATE TABLE IF NOT EXISTS task_tracker(taskid INTEGER PRIMARY KEY, task TEXT NOT NULL, priority TEXT NOT NULL, category TEXT NOT NULL, description TEXT NOT NULL, duedate TEXT NOT NULL)"""
+        cur.execute(sql)
+        db.commit()
+        db.close()
     def add_task(self, task):
-        for existing_task in self.tasks:
-            if existing_task.taskid==task.taskid:
-                print("Task ID already exists")
-                return False
-        self.tasks.append(task)
-        print("Task is added")
+        db,cur=self.database()
+        sql="""INSERT INTO task_tracker(taskid,task,priority,category,description, duedate) values(?,?,?,?,?,?)"""
+        cur.execute(sql,(task.taskid, task.task,task.priority, task.category, task.description, task.due_date))
+        # self.tasks.append(task)
+        db.commit()
+        db.close()
+        print("Task added to database")
         return True
-
-    def save_json(self):
-        json_task_list=[]
-        for task in self.tasks:
-            json_task_list.append(task.__dict__)
-        with open("json_task_list.json", "w") as file:
-            json.dump(json_task_list, file, indent=4)
-        print("data stored")
-
-
-    def read_json(self):
-        with open("json_task_list.json", "r", encoding="utf-8") as file:
-            loaded_data = json.load(file)
-        self.tasks=[]
-        for task_data in loaded_data:
-            task = Task(
-                task_data["taskid"],
-                task_data["task"],
-                task_data["priority"],
-                task_data["category"],
-                task_data["description"],
-                task_data["due_date"]
-            )
-            self.tasks.append(task)
-        print("Tasks loaded sucessfully. ")
-        # print(loaded_data)
 
 
     def remove_task(self, task_id):
-
-        for i, task in enumerate(self.tasks):
-            if task.taskid == task_id:
-                self.tasks.pop(i)
-                print("Task is removed")
-                return True
-        print("Task not found")
-        return False
+        db, cur = self.database()
+        sql = """DELETE FROM task_tracker where taskid=?"""
+        cur.execute(sql,(task_id,))
+        db.commit()
+        print("data deleted" )
+        if cur.rowcount==0:
+            return False
+        return True
+        db.close()
 
     def update_task(self, newtask):
-        for i, task in enumerate(self.tasks):
-            if task.taskid == newtask.taskid:
-                self.tasks[i] = newtask
-                print("Task updated")
-                return True
-        print("Task not found")
-        return False
+        db, cur = self.database()
+        sql = """ UPDATE task_tracker SET task=?,priority=?, category=?, description=? where taskid=?"""
+        taskid=newtask.taskid
+        task=newtask.task
+        priority=newtask.priority
+        category=newtask.category
+        description=newtask.description
+        cur.execute(sql, (task,priority,category,description,taskid,))
+        print("Database is updated")
+        db.commit()
+        db.close()
+
 
     def search_by_word(self, search_word):
-        # results=[]
-        for task in self.tasks:
-            if search_word.lower() in task.description.lower():
-                # results.append(task)
-                # print(self.tasks[i])
-                print(task)
-        # return results
-    def filter_by_id(self, search_id):
-        for task in self.tasks:
+        db, cur = self.database()
+        sql = """SELECT * FROM task_tracker WHERE description LIKE ?"""
+        cur.execute(sql, ('%'+search_word+'%',))
+        result=cur.fetchall()
+        return result
+        db.close()
 
-            if task.taskid == int(search_id):
-                print(task)
-                return
+
+    def filter_by_id(self, search_id):
+
+        db, cur = self.database()
+        sql = """SELECT *FROM task_tracker where taskid=?"""
+        cur.execute(sql,(search_id, ))
+        result=cur.fetchone()
+        return result
+        db.close()
 
     def filter_by_category(self, search_category):
-        found = False
+        db, cur = self.database()
+        sql = """SELECT * FROM task_tracker where category=?"""
+        cur.execute(sql, (search_category,))
+        result=cur.fetchall()
+        return result
+        db.close()
 
-        for task in self.tasks:
-            if task.category.lower() == search_category.lower():
-                print("-" * 20)
-                print(task)
-                found = True
-        if not found:
-            print("Task not found")
+
 
 
 

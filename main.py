@@ -3,10 +3,10 @@ from validation import category_validation,taskid_validation,priority_validation
 from Task_manager import Taskmanager
 from Task import Task
 
-
 def main():
     manager = Taskmanager()
-    manager.read_json()
+    manager.create_Database()
+    # manager.read_json()
     while True:
         manager.show_menu()
         choice = input ("choose and option:")
@@ -28,11 +28,11 @@ def main():
                 due_date)
 
             manager.add_task(todo_task)
-            manager.save_json()
+            # manager.save_json()
 
         elif choice == "2":
             # manager.read_json()
-            manager.view_task()
+            print(manager.view_task())
 
 
         elif choice == "3":
@@ -51,24 +51,25 @@ def main():
                 due_date)
 
             manager.update_task(new_task)
-            manager.save_json()
+            # manager.save_json()
 
         elif choice == "4":
             filter_id= input("enter id to be searched")
-            manager.filter_by_id(filter_id)
+            print(manager.filter_by_id(filter_id))
 
         elif choice == "5":
             filter_category=input("enter category to be searched")
-            manager.filter_by_category(filter_category)
+            print(manager.filter_by_category(filter_category))
+
 
         elif choice == "6":
             search_word=input("enter word to be searched")
-            manager.search_by_word(search_word)
+            print(manager.search_by_word(search_word))
 
         elif choice == "7":
             remove_id= input("enter taskid to be removed")
             manager.remove_task(remove_id)
-            manager.save_json()
+            # manager.save_json()
 
         elif choice == "8":
             print("Thanks for using the To-Do App!")
