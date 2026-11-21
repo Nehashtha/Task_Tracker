@@ -3,8 +3,9 @@ from Task import Task
 import sqlite3
 
 class Taskmanager():
-    def __init__(self):
+    def __init__(self, db_name='task_database.db'):
         self.tasks = []
+        self.db_name=db_name
 
     def show_menu(self):
         print("1. Add task")
@@ -26,7 +27,7 @@ class Taskmanager():
         db.close()
 
     def database(self):
-        db=sqlite3.connect('task_database.db')
+        db=sqlite3.connect(self.db_name)
         cur=db.cursor()
         return db, cur
     def create_Database(self):
@@ -35,6 +36,7 @@ class Taskmanager():
         cur.execute(sql)
         db.commit()
         db.close()
+
     def add_task(self, task):
         db,cur=self.database()
         sql="""INSERT INTO task_tracker(taskid,task,priority,category,description, duedate) values(?,?,?,?,?,?)"""
@@ -48,36 +50,54 @@ class Taskmanager():
 
     def remove_task(self, task_id):
         db, cur = self.database()
-        sql = """DELETE FROM task_tracker where taskid=?"""
-        cur.execute(sql,(task_id,))
-        db.commit()
-        print("data deleted" )
-        if cur.rowcount==0:
-            return False
-        return True
-        db.close()
+        sql ="""DELETE FROM task_tracker where taskid=?"""
+        try:
+            cur.execute(sql,(task_id,))
+            db.commit()
+            print("data deleted" )
+            if cur.rowcount==0:
+                return False
+            return True
+        finally:
+            db.close()
 
     def update_task(self, newtask):
         db, cur = self.database()
-        sql = """ UPDATE task_tracker SET task=?,priority=?, category=?, description=? where taskid=?"""
-        taskid=newtask.taskid
-        task=newtask.task
-        priority=newtask.priority
-        category=newtask.category
-        description=newtask.description
-        cur.execute(sql, (task,priority,category,description,taskid,))
-        print("Database is updated")
-        db.commit()
-        db.close()
+        try:
+            sql = """ UPDATE task_tracker 
+                    SET task=?,priority=?, category=?, description=? 
+                    where taskid=?"""
+            taskid=newtask.taskid
+            task=newtask.task
+            priority=newtask.priority
+            category=newtask.category
+            description=newtask.description
+            cur.execute(sql, (task,priority,category,description,taskid,))
+            db.commit()
+            return cur.rowcount > 0
+
+        # print("Database is updated")
+        finally:
+            # db.commit()
+            db.close()
+
 
 
     def search_by_word(self, search_word):
+        """
+        using try/ finally :make sure the database connection is always closed, even if an error occurs or the function returns early.
+        :param search_word:
+        :return:
+        """
         db, cur = self.database()
-        sql = """SELECT * FROM task_tracker WHERE description LIKE ?"""
-        cur.execute(sql, ('%'+search_word+'%',))
-        result=cur.fetchall()
-        return result
-        db.close()
+        try:
+            sql = """SELECT * FROM task_tracker WHERE description LIKE ?"""
+            cur.execute(sql, ('%'+search_word+'%',))
+            result=cur.fetchall()
+            return result
+        finally:
+
+            db.close()
 
 
     def filter_by_id(self, search_id):
@@ -86,16 +106,16 @@ class Taskmanager():
         sql = """SELECT *FROM task_tracker where taskid=?"""
         cur.execute(sql,(search_id, ))
         result=cur.fetchone()
-        return result
         db.close()
+        return result
 
     def filter_by_category(self, search_category):
         db, cur = self.database()
         sql = """SELECT * FROM task_tracker where category=?"""
         cur.execute(sql, (search_category,))
         result=cur.fetchall()
-        return result
         db.close()
+        return result
 
 
 
