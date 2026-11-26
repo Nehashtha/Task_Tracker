@@ -1,0 +1,26 @@
+[
+    {
+        "taskid": 1,
+        "task": "costco shopping",
+        "priority": "high",
+        "category": "grocery",
+        "description": "shopping",
+        "due_date": "2025-09-08"
+    },
+    {
+        "taskid": 2,
+        "task": "learn sql",
+        "priority": "high",
+        "category": "learning",
+        "description": "learn sql for project",
+        "due_date": "2024-10-23"
+    },
+    {
+        "taskid": 3,
+        "task": "bill payment",
+        "priority": "low",
+        "category": "work",
+        "description": "bill payment internet",
+        "due_date": "2028-09-08"
+    }
+]
