@@ -1,0 +1,7 @@
+services:
+  task-tracker:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./task_database.db:/app/task_database.db
